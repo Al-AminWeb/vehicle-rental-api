@@ -1,12 +1,81 @@
-import express,{Request,Response}  from 'express'
+import express, {Request, Response} from "express";
+import {Pool} from "pg";
+import dotenv from "dotenv";
+import path from "path";
 
-const app = express()
-const port = 5000
 
-app.get('/', (req:Request, res:Response) => {
-    res.send('Hello World!')
+dotenv.config({path: path.join(process.cwd(), '.env')});
+const app = express();
+const port = 5000;
+app.use(express.json());
+
+const pool = new Pool({
+    connectionString: `${process.env.CONNECTION_STR}`
+});
+
+
+// language=text format=false
+const initDB = async () => {
+    // USERS TABLE
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            email VARCHAR(150) NOT NULL UNIQUE,
+            password TEXT NOT NULL,
+            phone VARCHAR(20) NOT NULL,
+            role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'customer'))
+        );
+    `);
+
+    // VEHICLES TABLE
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS vehicles (
+            id SERIAL PRIMARY KEY,
+            vehicle_name VARCHAR(150) NOT NULL,
+            type VARCHAR(20) NOT NULL CHECK (type IN ('car', 'bike', 'van', 'SUV')),
+            registration_number VARCHAR(50) NOT NULL UNIQUE,
+            daily_rent_price NUMERIC NOT NULL CHECK (daily_rent_price > 0),
+            availability_status VARCHAR(20) NOT NULL CHECK (availability_status IN ('available', 'booked'))
+        );
+    `);
+
+    // BOOKINGS TABLE
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS bookings (
+            id SERIAL PRIMARY KEY,
+            customer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+            rent_start_date DATE NOT NULL,
+            rent_end_date DATE NOT NULL,
+            total_price NUMERIC NOT NULL CHECK (total_price > 0),
+            status VARCHAR(20) NOT NULL CHECK (status IN ('active', 'cancelled', 'returned'))
+        );
+    `);
+};
+
+
+
+initDB();
+
+app.get("/", (req:Request, res: Response) => {
+    res.send("Hello World who are u!");
+});
+
+app.post("/users", async (req: Request, res: Response) => {
+    const {name, email, password, phone, role} = req.body;
+    try {
+const result = await pool.query(`INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [name, email, password, phone, role]);
+
+        console.log(result)
+        res.send({message:"data inserted successfully"})
+    } catch (err: any) {
+        res.status(400).send(err.message);
+    }
+
 })
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+app.listen(port, async () => {
+
+    console.log(`Example app listening on port ${port}`);
+});
