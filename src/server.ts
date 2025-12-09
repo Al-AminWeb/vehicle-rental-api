@@ -14,7 +14,6 @@ const pool = new Pool({
 });
 
 
-//la
 const initDB = async () => {
     // USERS TABLE
     await pool.query(`
@@ -53,8 +52,6 @@ const initDB = async () => {
         );
     `);
 };
-
-
 
 initDB();
 
@@ -135,25 +132,47 @@ app.put("/users/:id", async (req: Request, res: Response) => {
     try {
         const { name, email, password, phone, role } = req.body;
 
-        const result = await pool.query(
-            `UPDATE users 
-             SET name = $1, email = $2, password = $3, phone = $4, role = $5 
-             WHERE id = $6 
-             RETURNING *`,
-            [name, email, password, phone, role, req.params.id]
+        // First get the existing user
+        const oldUser = await pool.query(
+            `SELECT * FROM users WHERE id = $1`,
+            [req.params.id]
         );
 
-        if (result.rows.length === 0) {
+        if (oldUser.rows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "User not found",
             });
         }
 
+        const user = oldUser.rows[0];
+
+
+        const updatedName = name || user.name;
+        const updatedEmail = email || user.email;
+        const updatedPassword = password || user.password;
+        const updatedPhone = phone || user.phone;
+        const updatedRole = role || user.role;
+
+        const result = await pool.query(
+            `UPDATE users 
+             SET name = $1, email = $2, password = $3, phone = $4, role = $5
+             WHERE id = $6 
+             RETURNING *`,
+            [
+                updatedName,
+                updatedEmail,
+                updatedPassword,
+                updatedPhone,
+                updatedRole,
+                req.params.id
+            ]
+        );
+
         res.status(200).json({
             success: true,
+            message: "User updated successfully",
             data: result.rows[0],
-            message: "User updated successfully"
         });
 
     } catch (err: any) {
@@ -163,6 +182,7 @@ app.put("/users/:id", async (req: Request, res: Response) => {
         });
     }
 });
+
 
 
 
