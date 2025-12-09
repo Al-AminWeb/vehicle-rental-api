@@ -3,7 +3,6 @@ import {Pool} from "pg";
 import dotenv from "dotenv";
 import path from "path";
 
-
 dotenv.config({path: path.join(process.cwd(), '.env')});
 const app = express();
 const port = 5000;
@@ -12,7 +11,6 @@ app.use(express.json());
 const pool = new Pool({
     connectionString: `${process.env.CONNECTION_STR}`
 });
-
 
 const initDB = async () => {
     // USERS TABLE
@@ -75,7 +73,6 @@ const result = await pool.query(`INSERT INTO users (name, email, password, phone
 
 })
 
-
 app.get("/users", async (req: Request, res: Response) => {
     try {
         const result = await pool.query(`SELECT * FROM users`);
@@ -94,7 +91,6 @@ app.get("/users", async (req: Request, res: Response) => {
         })
     }
 })
-
 
 //language:text
 app.get("/users/:id", async (req: Request, res: Response) => {
@@ -124,8 +120,6 @@ app.get("/users/:id", async (req: Request, res: Response) => {
 
     }
 })
-
-
 
 //update api
 app.put("/users/:id", async (req: Request, res: Response) => {
@@ -183,9 +177,6 @@ app.put("/users/:id", async (req: Request, res: Response) => {
     }
 });
 
-
-
-
 //delete api
 app.delete("/users/:id", async (req: Request, res: Response) => {
     try {
@@ -211,7 +202,42 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
     }
 })
 
-app.listen(port, async () => {
 
+
+
+
+
+
+
+
+//vehicle crud
+//post api for vehicles
+app.post("/api/v1/vehicles", async (req: Request, res: Response) => {
+    const {vehicle_name, type, registration_number, daily_rent_price, availability_status} = req.body;
+    console.log("req.body =", req.body);
+
+    try{
+        const result = await pool.query(`INSERT INTO vehicles (vehicle_name, type, registration_number, daily_rent_price, availability_status) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [vehicle_name, type, registration_number, daily_rent_price, availability_status]);
+
+        res.status(201).json({
+            success:true,
+            message:"Vehicle created successfully",
+            data:result.rows[0],
+        })
+    }
+    catch (err:any){
+        res.status(400).json({
+            success:false,
+            message:err.message,
+        });
+    }
+})
+
+
+
+
+
+
+app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`);
 });
