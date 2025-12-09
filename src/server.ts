@@ -264,6 +264,33 @@ app.get("/api/v1/vehicles", async (req: Request, res: Response) => {
 )
 
 
+//single vehicle
+app.get("/api/v1/vehicles/:vehicleId", async (req: Request, res: Response) => {
+    try {
+        const result = await pool.query(`SELECT *
+                                         FROM vehicles
+                                         WHERE id = $1`, [req.params.vehicleId]);
+
+        if (result.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                message: "Vehicle not found",
+            })
+        }
+        res.status(200).json({
+            success: true,
+            message: "Vehicle fetched successfully",
+            data: result.rows[0],
+        })
+    } catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+        })
+    }
+})
+
+
     app.listen(port, async () => {
         console.log(`Example app listening on port ${port}`);
     });
