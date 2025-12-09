@@ -315,6 +315,77 @@ app.delete("/api/v1/vehicles/:vehicleId", async (req: Request, res: Response) =>
     }
 })
 
-    app.listen(port, async () => {
-        console.log(`Example app listening on port ${port}`);
+//update vehicle
+app.put("/api/v1/vehicles/:vehicleId", async (req: Request, res: Response) => {
+    try {
+        const {vehicle_name, type, registration_number, daily_rent_price, availability_status} = req.body;
+
+        const oldVehicle = await pool.query(
+            `SELECT *
+             FROM vehicles
+             WHERE id = $1`,
+            [req.params.vehicleId]
+        );
+
+        if (oldVehicle.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Vehicle not found",
+            });
+        }
+        const vehicle = oldVehicle.rows[0];
+
+        const updatedVehicleName = vehicle_name || vehicle.vehicle_name;
+        const updatedType = type || vehicle.type;
+        const updatedRegistrationNumber = registration_number || vehicle.registration_number;
+        const updatedDailyRentPrice = daily_rent_price || vehicle.daily_rent_price;
+        const updatedAvailabilityStatus = availability_status || vehicle.availability_status;
+
+        const result = await pool.query(
+            `UPDATE vehicles
+             SET vehicle_name = $1,
+                 type = $2,
+                 registration_number = $3,
+                 daily_rent_price = $4,
+                 availability_status = $5
+             WHERE id = $6 RETURNING *`,
+            [
+                updatedVehicleName,
+                updatedType,
+                updatedRegistrationNumber,
+                updatedDailyRentPrice,
+                updatedAvailabilityStatus,
+                req.params.vehicleId
+            ]
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Vehicle updated successfully",
+            data: result.rows[0],
+        });
+    }
+
+
+    catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+        });
+    }
+
+});
+
+
+
+app.use((req: Request, res: Response) => {
+    res.status(404).json({
+        success: false,
+        message: "Endpoint not found",
+        path:req.path,
     });
+})
+
+app.listen(port, async () => {
+    console.log(`Example app listening on port ${port}`);
+});
