@@ -126,7 +126,7 @@ app.put("/users/:id", async (req: Request, res: Response) => {
     try {
         const { name, email, password, phone, role } = req.body;
 
-        // First get the existing user
+
         const oldUser = await pool.query(
             `SELECT * FROM users WHERE id = $1`,
             [req.params.id]
@@ -233,11 +233,37 @@ app.post("/api/v1/vehicles", async (req: Request, res: Response) => {
     }
 })
 
+//get api for all vehicles
+app.get("/api/v1/vehicles", async (req: Request, res: Response) => {
+        try {
+            const result = await pool.query(`SELECT *
+                                             FROM vehicles
+                                             ORDER BY id ASC`);
+
+            const vehicles = result.rows;
+
+            if (vehicles.length === 0) {
+                res.status(200).json({
+                    success: true,
+                    message: "No vehicles found",
+                    data: [],
+                })
+            }
+            res.status(200).json({
+                success: true,
+                message: "Vehicles fetched successfully",
+                data: vehicles,
+            })
+        } catch (err: any) {
+            res.status(500).json({
+                success: false,
+                message: err.message,
+            })
+        }
+    }
+)
 
 
-
-
-
-app.listen(port, async () => {
-    console.log(`Example app listening on port ${port}`);
-});
+    app.listen(port, async () => {
+        console.log(`Example app listening on port ${port}`);
+    });
