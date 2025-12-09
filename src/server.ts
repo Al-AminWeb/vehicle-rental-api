@@ -14,7 +14,7 @@ const pool = new Pool({
 });
 
 
-// language=text format=false
+//
 const initDB = async () => {
     // USERS TABLE
     await pool.query(`
@@ -62,17 +62,70 @@ app.get("/", (req:Request, res: Response) => {
     res.send("Hello World who are u!");
 });
 
+//user crud
 app.post("/users", async (req: Request, res: Response) => {
     const {name, email, password, phone, role} = req.body;
     try {
 const result = await pool.query(`INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [name, email, password, phone, role]);
-
-        console.log(result)
-        res.send({message:"data inserted successfully"})
+        res.status(201).json({
+            success:false,
+            message:"User created successfully",
+            data:result.rows[0],
+        });
     } catch (err: any) {
         res.status(400).send(err.message);
     }
 
+})
+
+
+app.get("/users", async (req: Request, res: Response) => {
+    try {
+        const result = await pool.query(`SELECT * FROM users`);
+
+        res.status(200).json({
+            success: true,
+            data: result.rows,
+            message: "Users fetched successfully"
+        })
+    }
+    catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+
+        })
+    }
+})
+
+
+//language:text
+app.get("/users/:id", async (req: Request, res: Response) => {
+    try {
+        const result = await pool.query(`SELECT *
+                                         FROM users
+                                         WHERE id = $1`, [req.params.id]);
+        if (result.rows.length === 0) {
+            res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        } else {
+            res.status(200).json({
+                success: true,
+                data: result.rows[0],
+                message: "User fetched successfully"
+            })
+        }
+
+    } catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message,
+
+        })
+
+    }
 })
 
 app.listen(port, async () => {
