@@ -1,15 +1,15 @@
-import express, {Request, Response} from "express";
+import express, {NextFunction, Request, Response} from "express";
 import {Pool} from "pg";
-import dotenv from "dotenv";
-import path from "path";
+import config from "./config";
 
-dotenv.config({path: path.join(process.cwd(), '.env')});
+
+
 const app = express();
-const port = 5000;
+const port = config.port;
 app.use(express.json());
 
 const pool = new Pool({
-    connectionString: `${process.env.CONNECTION_STR}`
+    connectionString: `${config.connection_str}`
 });
 
 const initDB = async () => {
@@ -52,6 +52,13 @@ const initDB = async () => {
 };
 
 initDB();
+
+// const logger = (req: Request, res: Response, next:NextFunction) => {
+//     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}\n`);
+//     next()
+// }
+
+
 
 app.get("/", (req:Request, res: Response) => {
     res.send("Hello World who are u!");
@@ -201,13 +208,6 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
         })
     }
 })
-
-
-
-
-
-
-
 
 
 //vehicle crud
