@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../../config/db";
 import jwt from "jsonwebtoken";
+import config from "../../config";
 
 const signIn = async (email: string, password: string) => {
 
@@ -20,12 +21,12 @@ const signIn = async (email: string, password: string) => {
         return false;
     }
 
-    const secret = "KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30";
+
 
 
     const token = jwt.sign(
         { id: user.id, name: user.name, email: user.email, role: user.role },
-        secret,
+        config.jwtSecret as string,
         { expiresIn: "120d" }
     );
 
