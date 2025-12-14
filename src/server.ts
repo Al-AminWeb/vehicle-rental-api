@@ -4,6 +4,7 @@ import initDB, {pool} from "./config/db";
 import {userRoutes} from "./modules/users/user.routes";
 import {vehicleRoutes} from "./modules/vehicles/vehicle.routes";
 import {authRoutes} from "./modules/auth/auth.routes";
+import {bookingRoutes} from "./modules/bookings/booking.routes";
 //228 gb
 
 
@@ -28,6 +29,7 @@ app.use("/api/v1/vehicles", vehicleRoutes);
 
 app.use("/api/v1/auth", authRoutes);
 
+app.use("/api/v1/bookings", bookingRoutes);
 
 
 app.use((req: Request, res: Response) => {
