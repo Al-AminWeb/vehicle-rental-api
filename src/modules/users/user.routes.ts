@@ -7,12 +7,12 @@ const router = express.Router();
 
 router.post("/",userControllers.createUser);
 
-router.get("/",auth(),userControllers.getUser);
+router.get("/",auth("admin"),userControllers.getUser);
 
-router.get("/:id",userControllers.getSingleUser);
+router.get("/:userId",userControllers.getSingleUser);
 
-router.put("/:id",userControllers.updateUser);
+router.put("/:userId",userControllers.updateUser);
 
-router.delete("/:id",userControllers.deleteUser);
+router.delete("/:userId",userControllers.deleteUser);
 
 export const userRoutes = router;
