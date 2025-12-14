@@ -3,6 +3,7 @@ import config from "./config";
 import initDB, {pool} from "./config/db";
 import {userRoutes} from "./modules/users/user.routes";
 import {vehicleRoutes} from "./modules/vehicles/vehicle.routes";
+import {authRoutes} from "./modules/auth/auth.routes";
 //228 gb
 
 
@@ -25,7 +26,7 @@ app.use("/users",userRoutes)
 
 app.use("/api/v1/vehicles", vehicleRoutes);
 
-
+app.use("/api/v1/auth", authRoutes)
 
 
 
