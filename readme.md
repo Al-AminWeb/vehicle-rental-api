@@ -1,7 +1,4 @@
-Yes — **README is a required item**, and this is the version you should submit.
-I’ll give you a **clean, teacher-safe README** that matches **exactly what you built** and **won’t raise questions**.
 
-You can copy-paste this into `README.md`.
 
 ---
 
